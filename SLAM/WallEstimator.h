@@ -2,7 +2,6 @@
 
 #include <optional>
 #include "Measurement.h"
-#include "Vec2.h"
 
 namespace SLAM
 {

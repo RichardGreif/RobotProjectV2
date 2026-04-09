@@ -3,7 +3,6 @@
 #include <array>
 
 #include "WallMap.h"
-#include "WallMap.h"
 
 namespace SLAM
 {

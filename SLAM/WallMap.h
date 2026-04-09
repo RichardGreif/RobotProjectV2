@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Measurement.h"
-#include "Vec2.h"
 #include <array>
+#include <utility>
 
 
 namespace SLAM
@@ -49,5 +49,4 @@ namespace SLAM
 
     };
 
-    
 }

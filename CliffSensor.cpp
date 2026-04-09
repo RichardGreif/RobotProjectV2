@@ -1,5 +1,5 @@
 #include "CliffSensor.h"
-#include "config.h"
+#include "Config.h"
 
 #include <Arduino.h>
 #include <Wire.h>
