@@ -1,38 +1,38 @@
 #include <QApplication>
+#include <QString>
 
-#include "MapSnapshot.h"
 #include "MapWidget.h"
-
-namespace
-{
-    SLAM::MapSnapshot CreateDummySnapshot()
-    {
-        SLAM::MapSnapshot snapshot;
-
-        snapshot.walls[0] = {Vec2(-2.0f, -1.5f), Vec2(2.0f, -1.5f), 6.0f};
-        snapshot.walls[1] = {Vec2(2.0f, -1.5f), Vec2(2.0f, 1.5f), 5.0f};
-        snapshot.walls[2] = {Vec2(2.0f, 1.5f), Vec2(-2.0f, 1.5f), 4.0f};
-        snapshot.walls[3] = {Vec2(-2.0f, 1.5f), Vec2(-2.0f, -1.5f), 5.0f};
-        snapshot.walls[4] = {Vec2(-0.5f, -1.5f), Vec2(-0.5f, -0.2f), 3.0f};
-        snapshot.walls[5] = {Vec2(0.8f, 0.3f), Vec2(1.7f, 1.1f), 2.0f};
-        snapshot.walls[6] = {Vec2(-1.7f, 0.8f), Vec2(-0.8f, 0.8f), 1.5f};
-        snapshot.wallCount = 7;
-
-        return snapshot;
-    }
-}
+#include "SnapshotTcpServer.h"
 
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
 
+    constexpr quint16 Port = 4242;
+
     SLAM::MapWidget window;
-    window.setWindowTitle("MapSnapshot Dummy Test");
+    window.setWindowTitle(QString("MapSnapshot TCP Listener - Port %1").arg(Port));
     window.resize(800, 800);
     window.SetPixelsPerMeter(140.0f);
     window.SetGridSpacingMeters(0.5f);
-    window.SetSnapshot(CreateDummySnapshot());
     window.show();
+
+    SnapshotTcpServer server(Port);
+    server.SetSnapshotHandler([&window](const SLAM::MapSnapshot& snapshot)
+    {
+        window.SetSnapshot(snapshot);
+    });
+
+    server.SetStatusHandler([&window](const QString& status)
+    {
+        window.setWindowTitle(QString("MapSnapshot TCP Listener - %1").arg(status));
+    });
+
+    QString errorMessage;
+    if (!server.Start(&errorMessage))
+    {
+        window.setWindowTitle(QString("TCP start failed: %1").arg(errorMessage));
+    }
 
     return app.exec();
 }
