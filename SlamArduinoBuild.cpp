@@ -1,0 +1,5 @@
+#include "SLAM/Measurement.cpp"
+#include "SLAM/WallEstimator.cpp"
+#include "SLAM/WallMap.cpp"
+#include "SLAM/Mapper.cpp"
+#include "SLAM/MapSnapshot.cpp"

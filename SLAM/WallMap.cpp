@@ -7,6 +7,57 @@ namespace SLAM
     constexpr float normalDistanceThreshold_ = 1.0f; // in cm, adjust based on expected noise
     constexpr float lateralOverflowThreshold_ = 2.0f; // distance in cm beyond the segment endpoints to still consider a match
     constexpr float threshold = 0.01f; // minimal confidence squared to consider
+    constexpr float initialSegmentHalfLength = 5.0f; // in cm
+
+    void WallMap::CreateNewSegmentFromObservation(const WallPoint& observation)
+    {
+        if (count_ >= MaxSegments)
+        {
+            return;
+        }
+
+        const Vec2 normal = observation.normal.normalized();
+        const Vec2 tangent = normal.cross(1.0f).normalized();
+        const Vec2 halfExtent = tangent * initialSegmentHalfLength;
+
+        segments_[count_] = {
+            observation.point - halfExtent,
+            observation.point + halfExtent,
+            observation.normal.length()
+        };
+
+        ++count_;
+    }
+
+    void WallMap::MergeObservationIntoSegment(const WallPoint& observation, WallSegment& segment)
+    {
+        const Vec2 wallVector = segment.end - segment.start;
+        const float wallLength = wallVector.length();
+        if (wallLength <= 1e-6f)
+        {
+            return;
+        }
+
+        const Vec2 direction = wallVector / wallLength;
+
+        float startProjection = segment.start.dot(direction);
+        float endProjection = segment.end.dot(direction);
+        float observationProjection = observation.point.dot(direction);
+
+        if (observationProjection < startProjection)
+        {
+            segment.start = observation.point;
+            startProjection = observationProjection;
+        }
+
+        if (observationProjection > endProjection)
+        {
+            segment.end = observation.point;
+            endProjection = observationProjection;
+        }
+
+        segment.confidence += observation.normal.length();
+    }
 
     void WallMap::AddObservation(const WallPoint& observation)
     {
