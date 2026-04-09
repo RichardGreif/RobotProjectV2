@@ -1,0 +1,51 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Configure Qt Viewer",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-S",
+                ".",
+                "-B",
+                "build-qt-test",
+                "-G",
+                "MinGW Makefiles",
+                "-DCMAKE_PREFIX_PATH=C:/Qt/6.11.0/mingw_64",
+                "-DCMAKE_C_COMPILER=C:/Qt/Tools/mingw1310_64/bin/gcc.exe",
+                "-DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingw1310_64/bin/g++.exe"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Viewer",
+                "env": {
+                    "Path": "C:\\Qt\\Tools\\mingw1310_64\\bin;C:\\Qt\\6.11.0\\mingw_64\\bin;${env:Path}"
+                }
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Qt Viewer",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "build-qt-test"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Viewer",
+                "env": {
+                    "Path": "C:\\Qt\\Tools\\mingw1310_64\\bin;C:\\Qt\\6.11.0\\mingw_64\\bin;${env:Path}"
+                }
+            },
+            "dependsOn": "Configure Qt Viewer",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

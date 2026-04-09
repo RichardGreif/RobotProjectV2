@@ -1,0 +1,8 @@
+Viewer/build/
+Viewer/build-mingw/
+Viewer/build-qt-test/
+
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
