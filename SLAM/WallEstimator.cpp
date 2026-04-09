@@ -12,15 +12,20 @@ namespace SLAM
 
         const WallPoint& previous = currentState_.value();
 
-        WallPoint currentWallPoint = CalculateWallPoint(measurement, previous);
+        WallPoint currentWallPoint = CalculateWallPoint(measurement, &previous);
         currentState_ = CalculateNewEstimation(currentWallPoint, previous);
 
         return currentState_.value();
     }
 
+    bool WallEstimator::HasState() const
+    {
+        return currentState_.has_value();
+    }
+
     const WallPoint& WallEstimator::GetState() const
     {
-        return currentState_.value(); // bewusst value() statt * → klarer Fehler bei falscher Nutzung
+        return currentState_.value();
     }
 
     void WallEstimator::Reset()

@@ -54,3 +54,34 @@ namespace WifiConfig {
   constexpr const char* Password = "34530990654990042287";
 }
 
+namespace SnapshotStreamConfig {
+  constexpr float InitialRobotXcm = 0.0f;
+  constexpr float InitialRobotYcm = 0.0f;
+  constexpr float InitialRobotYawRad = 0.0f;
+
+  constexpr uint8_t ViewerIp0 = 192;
+  constexpr uint8_t ViewerIp1 = 168;
+  constexpr uint8_t ViewerIp2 = 178;
+  constexpr uint8_t ViewerIp3 = 44;
+
+  constexpr uint16_t ViewerPort = 4242;
+  constexpr unsigned long SendIntervalMs = 500;
+  constexpr unsigned long WifiReconnectIntervalMs = 5000;
+
+  constexpr float DistanceScaleToViewerUnits = 0.01f;
+  constexpr float MinObservationConfidence = 0.05f;
+  constexpr float MaxValidDistanceCm = 300.0f;
+
+  constexpr float LeftSensorXcm = -7.0f;
+  constexpr float LeftSensorYcm = 7.0f;
+  constexpr float LeftSensorYawRad = -1.5708f;
+
+  constexpr float CenterSensorXcm = 0.0f;
+  constexpr float CenterSensorYcm = 10.0f;
+  constexpr float CenterSensorYawRad = 0.0f;
+
+  constexpr float RightSensorXcm = 7.0f;
+  constexpr float RightSensorYcm = 7.0f;
+  constexpr float RightSensorYawRad = 1.5708f;
+}
+

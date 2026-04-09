@@ -17,6 +17,7 @@ namespace SLAM
         Vec2 normal; // Length encodes confidence
     };
 
+    WallPoint CreateInitialWallPoint(const MeasurementPoint& measurement);
     WallPoint CalculateWallPoint(const MeasurementPoint& measurement, const WallPoint* previousWallPoint = nullptr);
     WallPoint CalculateNewEstimation(const WallPoint& currentWallPoint, const WallPoint& previousWallPoint);
 }

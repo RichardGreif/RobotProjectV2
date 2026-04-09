@@ -43,6 +43,16 @@ namespace SLAM
         return wallMap_;
     }
 
+    bool Mapper::HasEstimatorState(int sensorIndex) const
+    {
+        return IsValidSensorIndex(sensorIndex) && estimators_[sensorIndex].HasState();
+    }
+
+    const WallPoint& Mapper::GetEstimatorState(int sensorIndex) const
+    {
+        return estimators_[sensorIndex].GetState();
+    }
+
     float Mapper::GetMinObservationConfidence() const
     {
         return minObservationConfidence_;

@@ -11,12 +11,16 @@ namespace SLAM
     constexpr float normalizationFactor = 0.04f;
     constexpr float initialConfidence = 0.5f; // Initial confidence for new wall points in cm
 
+    WallPoint CreateInitialWallPoint(const MeasurementPoint& measurement)
+    {
+        return { measurement.position + measurement.direction, measurement.direction.normalized() * initialConfidence };
+    }
+
     WallPoint CalculateWallPoint(const MeasurementPoint& measurement, const WallPoint* previousWallPoint)
     {
         if (previousWallPoint == nullptr)
         {
-            // If no previous wall point is available, use the measurement directly
-            return { measurement.position + measurement.direction, measurement.direction.normalized() * initialConfidence };
+            return CreateInitialWallPoint(measurement);
         }
 
         // calculate point

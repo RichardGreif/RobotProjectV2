@@ -1,34 +1,156 @@
-#include "MpuSensor.h"
-#include "DebugOutput.h"
 #include "Config.h"
-#include <Wire.h>
+#include "Common/Geometry.h"
+#include "Common/Pose2D.h"
+#include "SLAM/MapSnapshot.h"
+#include "SLAM/Mapper.h"
+#include "SnapshotTcpClient.h"
+#include "UltrasonicArray.h"
 
-MpuSensor mpuSensor(I2CAddress::MPU6050);
+#include <cmath>
+
+namespace
+{
+UltrasonicArray ultrasonicArray(
+  Pins::US1_TRIG,
+  Pins::US1_ECHO,
+  Pins::US2_TRIG,
+  Pins::US2_ECHO,
+  Pins::US3_TRIG,
+  Pins::US3_ECHO);
+
+SLAM::Mapper mapper(SnapshotStreamConfig::MinObservationConfidence);
+
+SnapshotTcpClient snapshotClient(
+  WifiConfig::Ssid,
+  WifiConfig::Password,
+  IPAddress(
+    SnapshotStreamConfig::ViewerIp0,
+    SnapshotStreamConfig::ViewerIp1,
+    SnapshotStreamConfig::ViewerIp2,
+    SnapshotStreamConfig::ViewerIp3),
+  SnapshotStreamConfig::ViewerPort,
+  SnapshotStreamConfig::DistanceScaleToViewerUnits,
+  SnapshotStreamConfig::WifiReconnectIntervalMs);
+
+Pose2D currentRobotPose{
+  Vec2(SnapshotStreamConfig::InitialRobotXcm, SnapshotStreamConfig::InitialRobotYcm),
+  SnapshotStreamConfig::InitialRobotYawRad
+};
+
+unsigned long lastSnapshotSendMs = 0;
+unsigned long lastLogMs = 0;
+
+SLAM::MeasurementPoint CreateMeasurement(
+  const Pose2D& robotPose,
+  float sensorXcm,
+  float sensorYcm,
+  float sensorYawRad,
+  float distanceCm)
+{
+  const Vec2 sensorPositionLocal(sensorXcm, sensorYcm);
+  const Vec2 sensorDirectionLocal(
+    std::cos(sensorYawRad) * distanceCm,
+    std::sin(sensorYawRad) * distanceCm);
+
+  SLAM::MeasurementPoint measurement;
+  measurement.position = Geometry::TransformToWorld(robotPose, sensorPositionLocal);
+  measurement.direction = Geometry::Rotate(sensorDirectionLocal, robotPose.yaw);
+  return measurement;
+}
+
+void AddMeasurementIfValid(
+  const Pose2D& robotPose,
+  int sensorIndex,
+  float distanceCm,
+  float sensorXcm,
+  float sensorYcm,
+  float sensorYawRad)
+{
+  if (distanceCm <= 0.0f || distanceCm > SnapshotStreamConfig::MaxValidDistanceCm) {
+    return;
+  }
+
+  mapper.ProcessMeasurement(
+    sensorIndex,
+    CreateMeasurement(robotPose, sensorXcm, sensorYcm, sensorYawRad, distanceCm));
+}
+
+void UpdateMapperFromUltrasonicReadings(const Pose2D& robotPose)
+{
+  AddMeasurementIfValid(
+    robotPose,
+    0,
+    ultrasonicArray.getLeftDistanceCm(),
+    SnapshotStreamConfig::LeftSensorXcm,
+    SnapshotStreamConfig::LeftSensorYcm,
+    SnapshotStreamConfig::LeftSensorYawRad);
+
+  AddMeasurementIfValid(
+    robotPose,
+    1,
+    ultrasonicArray.getCenterDistanceCm(),
+    SnapshotStreamConfig::CenterSensorXcm,
+    SnapshotStreamConfig::CenterSensorYcm,
+    SnapshotStreamConfig::CenterSensorYawRad);
+
+  AddMeasurementIfValid(
+    robotPose,
+    2,
+    ultrasonicArray.getRightDistanceCm(),
+    SnapshotStreamConfig::RightSensorXcm,
+    SnapshotStreamConfig::RightSensorYcm,
+    SnapshotStreamConfig::RightSensorYawRad);
+}
+}
 
 void setup()
 {
-    Serial.begin(115200);
-    delay(1000);
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("RobotProjectV2 snapshot sender starting");
 
-    Wire.begin(Pins::SDA, Pins::SCL);
-
-    if (!mpuSensor.begin())
-    {
-        Serial.println("MPU Init fehlgeschlagen");
-        while (true)
-        {
-            delay(1000);
-        }
-    }
+  ultrasonicArray.begin();
+  snapshotClient.begin();
 }
 
 void loop()
 {
-    if (mpuSensor.update())
-    {
-        // DebugOutput::printMpuAccelerationPlot(mpuSensor);
-        DebugOutput::printMpuGyroPlot(mpuSensor);
-    }
+  const unsigned long now = millis();
 
-    delay(100);
+  snapshotClient.update(now);
+  ultrasonicArray.update(now);
+
+  if (now - lastSnapshotSendMs >= SnapshotStreamConfig::SendIntervalMs) {
+    lastSnapshotSendMs = now;
+
+    UpdateMapperFromUltrasonicReadings(currentRobotPose);
+
+    const SLAM::MapSnapshot snapshot = SLAM::CreateMapSnapshot(mapper.GetWallMap());
+    const bool sent = snapshotClient.sendSnapshot(snapshot);
+
+    if (now - lastLogMs >= 1000) {
+      lastLogMs = now;
+      Serial.print("WiFi=");
+      Serial.print(snapshotClient.isWifiConnected() ? "connected" : "disconnected");
+      Serial.print(" walls=");
+      Serial.print(snapshot.wallCount);
+      Serial.print(" left=");
+      Serial.print(ultrasonicArray.getLeftDistanceCm());
+      Serial.print(" center=");
+      Serial.print(ultrasonicArray.getCenterDistanceCm());
+      Serial.print(" right=");
+      Serial.print(ultrasonicArray.getRightDistanceCm());
+      Serial.print(" pose=(");
+      Serial.print(currentRobotPose.position.x);
+      Serial.print(",");
+      Serial.print(currentRobotPose.position.y);
+      Serial.print(",");
+      Serial.print(currentRobotPose.yaw);
+      Serial.print(")");
+      Serial.print(" send=");
+      Serial.println(sent ? "ok" : "failed");
+    }
+  }
+
+  delay(10);
 }
