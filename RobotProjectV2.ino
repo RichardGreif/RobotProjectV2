@@ -10,6 +10,8 @@
 
 namespace
 {
+constexpr bool measurementDebugEnabled = true;
+
 UltrasonicArray ultrasonicArray(
   Pins::US1_TRIG,
   Pins::US1_ECHO,
@@ -67,12 +69,47 @@ void AddMeasurementIfValid(
   float sensorYawRad)
 {
   if (distanceCm <= 0.0f || distanceCm > SnapshotStreamConfig::MaxValidDistanceCm) {
+    if (measurementDebugEnabled) {
+      Serial.print("[Measure] skip sensor=");
+      Serial.print(sensorIndex);
+      Serial.print(" distanceCm=");
+      Serial.print(distanceCm, 3);
+      Serial.print(" max=");
+      Serial.println(SnapshotStreamConfig::MaxValidDistanceCm, 3);
+    }
     return;
   }
 
-  mapper.ProcessMeasurement(
-    sensorIndex,
-    CreateMeasurement(robotPose, sensorXcm, sensorYcm, sensorYawRad, distanceCm));
+  const SLAM::MeasurementPoint measurement = CreateMeasurement(
+    robotPose,
+    sensorXcm,
+    sensorYcm,
+    sensorYawRad,
+    distanceCm);
+
+  if (measurementDebugEnabled) {
+    Serial.print("[Measure] sensor=");
+    Serial.print(sensorIndex);
+    Serial.print(" distanceCm=");
+    Serial.print(distanceCm, 3);
+    Serial.print(" sensorLocal=(");
+    Serial.print(sensorXcm, 3);
+    Serial.print(",");
+    Serial.print(sensorYcm, 3);
+    Serial.print(",");
+    Serial.print(sensorYawRad, 5);
+    Serial.print(") worldPos=(");
+    Serial.print(measurement.position.x, 3);
+    Serial.print(",");
+    Serial.print(measurement.position.y, 3);
+    Serial.print(") worldDir=(");
+    Serial.print(measurement.direction.x, 3);
+    Serial.print(",");
+    Serial.print(measurement.direction.y, 3);
+    Serial.println(")");
+  }
+
+  mapper.ProcessMeasurement(sensorIndex, measurement);
 }
 
 void UpdateMapperFromUltrasonicReadings(const Pose2D& robotPose)

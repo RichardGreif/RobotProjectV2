@@ -9,13 +9,17 @@ namespace SLAM
     // US_precision is around 3 cm based on the documentation
     constexpr float normalizationFactor = 0.04f;
     constexpr float initialConfidence = 0.5f; // Initial confidence for new wall points in cm
+    constexpr float minimumPointDistanceCm = 3.0f; // minimum distance to calculate a new wall point in cm
 
     WallPoint CreateInitialWallPoint(const MeasurementPoint& measurement)
     {
-        return { measurement.position + measurement.direction, measurement.direction.normalized() * initialConfidence };
+        return {
+            measurement.position + measurement.direction,
+            measurement.direction.normalized() * initialConfidence
+        };
     }
 
-    WallPoint CalculateWallPoint(const MeasurementPoint& measurement, const WallPoint* previousWallPoint)
+    std::optional<WallPoint> CalculateWallPoint(const MeasurementPoint& measurement, const WallPoint* previousWallPoint)
     {
         if (previousWallPoint == nullptr)
         {
@@ -41,12 +45,16 @@ namespace SLAM
         // point of the wall based on the measurement
         Vec2 point = measurement.position + correctedDirection;
 
+        const Vec2 shift = point - previousWallPoint->point;
+        if (measurement.direction.normalized().dot(measurement.position - previousWallPoint->point) <= minimumPointDistanceCm)
+        {
+            return std::nullopt;
+        }
+
         // normal of the wall based on the measurement
-        Vec2 shift = (point - previousWallPoint->point );
         Vec2 normal = shift.cross(previousWallPoint->normal.cross(shift)) / shift.length() / previousWallPoint->normal.length(); 
         
-
-        return { point, normal };
+        return WallPoint{ point, normal };
     }
 
     WallPoint CalculateNewEstimation(const WallPoint& currentWallPoint, const WallPoint& previousWallPoint)

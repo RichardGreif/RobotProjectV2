@@ -62,7 +62,7 @@ namespace SnapshotStreamConfig {
   constexpr uint8_t ViewerIp0 = 192;
   constexpr uint8_t ViewerIp1 = 168;
   constexpr uint8_t ViewerIp2 = 178;
-  constexpr uint8_t ViewerIp3 = 44;
+  constexpr uint8_t ViewerIp3 = 45;
 
   constexpr uint16_t ViewerPort = 4242;
   constexpr unsigned long SendIntervalMs = 500;

@@ -1,7 +1,15 @@
 #include "Mapper.h"
 
+#ifdef ARDUINO
+#include <Arduino.h>
+#endif
+
 namespace SLAM
 {
+#ifdef ARDUINO
+    constexpr bool mapperDebugEnabled = true;
+#endif
+
     Mapper::Mapper(float minObservationConfidence)
         : minObservationConfidence_(minObservationConfidence)
     {
@@ -17,10 +25,51 @@ namespace SLAM
         WallEstimator& estimator = estimators_[sensorIndex];
         WallPoint wallPoint = estimator.Update(measurement);
 
+#ifdef ARDUINO
+        if (mapperDebugEnabled)
+        {
+            Serial.print("[Mapper] sensor=");
+            Serial.print(sensorIndex);
+            Serial.print(" measPos=(");
+            Serial.print(measurement.position.x, 3);
+            Serial.print(",");
+            Serial.print(measurement.position.y, 3);
+            Serial.print(") measDir=(");
+            Serial.print(measurement.direction.x, 3);
+            Serial.print(",");
+            Serial.print(measurement.direction.y, 3);
+            Serial.print(") wallPoint=(");
+            Serial.print(wallPoint.point.x, 3);
+            Serial.print(",");
+            Serial.print(wallPoint.point.y, 3);
+            Serial.print(") normal=(");
+            Serial.print(wallPoint.normal.x, 5);
+            Serial.print(",");
+            Serial.print(wallPoint.normal.y, 5);
+            Serial.print(") normalLen=");
+            Serial.print(wallPoint.normal.length(), 5);
+            Serial.print(" threshold=");
+            Serial.println(minObservationConfidence_, 5);
+        }
+#endif
+
         if (!ShouldAddToMap(wallPoint))
         {
+#ifdef ARDUINO
+            if (mapperDebugEnabled)
+            {
+                Serial.println("[Mapper] reject wallPoint because normalLen is below threshold");
+            }
+#endif
             return;
         }
+
+#ifdef ARDUINO
+        if (mapperDebugEnabled)
+        {
+            Serial.println("[Mapper] accept wallPoint -> add to map");
+        }
+#endif
 
         wallMap_.AddObservation(wallPoint);
     }

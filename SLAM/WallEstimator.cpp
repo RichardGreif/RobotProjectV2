@@ -11,9 +11,13 @@ namespace SLAM
         }
 
         const WallPoint& previous = currentState_.value();
+        const std::optional<WallPoint> currentWallPoint = CalculateWallPoint(measurement, &previous);
+        if (!currentWallPoint.has_value())
+        {
+            return previous;
+        }
 
-        WallPoint currentWallPoint = CalculateWallPoint(measurement, &previous);
-        currentState_ = CalculateNewEstimation(currentWallPoint, previous);
+        currentState_ = CalculateNewEstimation(currentWallPoint.value(), previous);
 
         return currentState_.value();
     }

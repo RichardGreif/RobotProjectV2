@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #include "../Common/Vec2.h"
 
 namespace SLAM
@@ -18,6 +20,6 @@ namespace SLAM
     };
 
     WallPoint CreateInitialWallPoint(const MeasurementPoint& measurement);
-    WallPoint CalculateWallPoint(const MeasurementPoint& measurement, const WallPoint* previousWallPoint = nullptr);
+    std::optional<WallPoint> CalculateWallPoint(const MeasurementPoint& measurement, const WallPoint* previousWallPoint = nullptr);
     WallPoint CalculateNewEstimation(const WallPoint& currentWallPoint, const WallPoint& previousWallPoint);
 }
