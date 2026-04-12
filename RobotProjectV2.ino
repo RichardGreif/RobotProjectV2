@@ -1,10 +1,14 @@
 #include "Config.h"
 #include "Common/Geometry.h"
 #include "Common/Pose2D.h"
+#include "ImuTracker.h"
+#include "PoseEstimator.h"
 #include "SLAM/MapSnapshot.h"
 #include "SLAM/Mapper.h"
 #include "SnapshotTcpClient.h"
+#include "SpeedSensor.h"
 #include "UltrasonicArray.h"
+#include "WheelOdometry.h"
 
 #include <cmath>
 
@@ -22,6 +26,8 @@ UltrasonicArray ultrasonicArray(
 
 SLAM::Mapper mapper(SnapshotStreamConfig::MinObservationConfidence);
 
+SpeedSensor speedSensors(Pins::LeftSPEED, Pins::RightSPEED);
+
 SnapshotTcpClient snapshotClient(
   WifiConfig::Ssid,
   WifiConfig::Password,
@@ -34,10 +40,20 @@ SnapshotTcpClient snapshotClient(
   SnapshotStreamConfig::DistanceScaleToViewerUnits,
   SnapshotStreamConfig::WifiReconnectIntervalMs);
 
-Pose2D currentRobotPose{
+Pose2D initialRobotPose{
   Vec2(SnapshotStreamConfig::InitialRobotXcm, SnapshotStreamConfig::InitialRobotYcm),
   SnapshotStreamConfig::InitialRobotYawRad
 };
+
+WheelOdometry wheelOdometry(
+  OdometryConfig::WheelBaseCm,
+  OdometryConfig::LeftWheelSpeedCmPerSecPerHz,
+  OdometryConfig::RightWheelSpeedCmPerSecPerHz,
+  OdometryConfig::LeftDirectionSign,
+  OdometryConfig::RightDirectionSign);
+
+ImuTracker imuTracker;
+PoseEstimator poseEstimator;
 
 unsigned long lastSnapshotSendMs = 0;
 unsigned long lastLogMs = 0;
@@ -147,7 +163,11 @@ void setup()
   Serial.println("RobotProjectV2 snapshot sender starting");
 
   ultrasonicArray.begin();
+  speedSensors.begin();
   snapshotClient.begin();
+  imuTracker.Begin();
+  wheelOdometry.Reset(initialRobotPose, millis());
+  poseEstimator.Reset(initialRobotPose);
 }
 
 void loop()
@@ -155,7 +175,13 @@ void loop()
   const unsigned long now = millis();
 
   snapshotClient.update(now);
+  speedSensors.update(now);
+  imuTracker.Update(now);
+  wheelOdometry.Update(now, speedSensors.getLeftSpeedHz(), speedSensors.getRightSpeedHz());
+  poseEstimator.UpdateFromSensors(wheelOdometry, imuTracker);
   ultrasonicArray.update(now);
+
+  const Pose2D& currentRobotPose = poseEstimator.GetPose();
 
   if (now - lastSnapshotSendMs >= SnapshotStreamConfig::SendIntervalMs) {
     lastSnapshotSendMs = now;
@@ -183,6 +209,11 @@ void loop()
       Serial.print(currentRobotPose.position.y);
       Serial.print(",");
       Serial.print(currentRobotPose.yaw);
+      Serial.print(")");
+      Serial.print(" wheelCmPerSec=(");
+      Serial.print(wheelOdometry.GetLeftLinearSpeedCmPerSec(), 3);
+      Serial.print(",");
+      Serial.print(wheelOdometry.GetRightLinearSpeedCmPerSec(), 3);
       Serial.print(")");
       Serial.print(" send=");
       Serial.println(sent ? "ok" : "failed");

@@ -85,3 +85,15 @@ namespace SnapshotStreamConfig {
   constexpr float RightSensorYawRad = 1.5708f;
 }
 
+namespace OdometryConfig {
+  constexpr float WheelBaseCm = 10.0f; // distance between wheels / 2 
+
+  // Startwert: 1 Hz Sensorsignal entspricht grob 1 cm/s Radgeschwindigkeit.
+  // Diesen Faktor bitte spaeter mit realer Fahrstrecke kalibrieren.
+  constexpr float LeftWheelSpeedCmPerSecPerHz = 1.0f;
+  constexpr float RightWheelSpeedCmPerSecPerHz = 1.0f;
+
+  constexpr float LeftDirectionSign = 1.0f;
+  constexpr float RightDirectionSign = 1.0f;
+}
+
