@@ -12,6 +12,8 @@ public:
 
   float getLeftSpeedHz() const;
   float getRightSpeedHz() const;
+  unsigned long getLeftTotalPhaseCount() const;
+  unsigned long getRightTotalPhaseCount() const;
 
 private:
   int _pinLeft;
@@ -19,6 +21,8 @@ private:
 
   volatile unsigned long _leftPhaseCount;
   volatile unsigned long _rightPhaseCount;
+  volatile unsigned long _leftTotalPhaseCount;
+  volatile unsigned long _rightTotalPhaseCount;
 
   volatile unsigned long _leftPhaseTimeUs;
   volatile unsigned long _rightPhaseTimeUs;

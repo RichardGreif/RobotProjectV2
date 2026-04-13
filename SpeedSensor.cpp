@@ -8,6 +8,8 @@ SpeedSensor::SpeedSensor(int pinLeft, int pinRight)
     _pinRight(pinRight),
     _leftPhaseCount(0),
     _rightPhaseCount(0),
+    _leftTotalPhaseCount(0),
+    _rightTotalPhaseCount(0),
     _leftPhaseTimeUs(0),
     _rightPhaseTimeUs(0),
     _lastStateLeft(HIGH),
@@ -39,6 +41,8 @@ void SpeedSensor::reset() {
   noInterrupts();
   _leftPhaseCount = 0;
   _rightPhaseCount = 0;
+  _leftTotalPhaseCount = 0;
+  _rightTotalPhaseCount = 0;
   _leftPhaseTimeUs = 0;
   _rightPhaseTimeUs = 0;
 
@@ -95,6 +99,20 @@ float SpeedSensor::getRightSpeedHz() const {
   return _rightSpeedHz;
 }
 
+unsigned long SpeedSensor::getLeftTotalPhaseCount() const {
+  noInterrupts();
+  const unsigned long value = _leftTotalPhaseCount;
+  interrupts();
+  return value;
+}
+
+unsigned long SpeedSensor::getRightTotalPhaseCount() const {
+  noInterrupts();
+  const unsigned long value = _rightTotalPhaseCount;
+  interrupts();
+  return value;
+}
+
 void IRAM_ATTR SpeedSensor::handleLeftInterrupt() {
   if (_instance) {
     _instance->onLeftChange();
@@ -114,6 +132,7 @@ void SpeedSensor::onLeftChange() {
   if (newState != _lastStateLeft) {
     _leftPhaseTimeUs += now - _lastChangeLeftUs;
     _leftPhaseCount++;
+    _leftTotalPhaseCount++;
 
     _lastStateLeft = newState;
     _lastChangeLeftUs = now;
@@ -127,6 +146,7 @@ void SpeedSensor::onRightChange() {
   if (newState != _lastStateRight) {
     _rightPhaseTimeUs += now - _lastChangeRightUs;
     _rightPhaseCount++;
+    _rightTotalPhaseCount++;
 
     _lastStateRight = newState;
     _lastChangeRightUs = now;

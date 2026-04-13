@@ -60,4 +60,19 @@ namespace RobotPoseTracking
   {
     return wheelOdometry.GetRightLinearSpeedCmPerSec();
   }
+
+  unsigned long GetLeftTotalPhaseCount()
+  {
+    return speedSensors.getLeftTotalPhaseCount();
+  }
+
+  unsigned long GetRightTotalPhaseCount()
+  {
+    return speedSensors.getRightTotalPhaseCount();
+  }
+
+  SpeedSensor& GetSpeedSensor()
+  {
+    return speedSensors;
+  }
 }

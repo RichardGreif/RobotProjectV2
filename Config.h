@@ -86,7 +86,7 @@ namespace SnapshotStreamConfig {
 }
 
 namespace OdometryConfig {
-  constexpr float WheelDistanceCm = 10.0f;
+  constexpr float WheelDistanceCm = 12.0f; // gemessen Abstand von Radmitte zu Radmitte in cm
 
   // Startwert: 1 Hz Sensorsignal entspricht grob 1 cm/s Radgeschwindigkeit.
   // Diesen Faktor bitte spaeter mit realer Fahrstrecke kalibrieren.
@@ -95,5 +95,13 @@ namespace OdometryConfig {
 
   constexpr float LeftDirectionSign = 1.0f;
   constexpr float RightDirectionSign = 1.0f;
+}
+
+namespace StrategyConfig {
+  constexpr float StraightTargetSpeedHz = 20.0f;
+  constexpr float TurnTargetSpeedHz = 15.0f;
+  constexpr unsigned long StraightStepCount = 100;
+  constexpr unsigned long WaitAfterStraightMs = 10000;
+  constexpr float TurnAngleRad = 3.14159f;
 }
 

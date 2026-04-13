@@ -1,3 +1,4 @@
+#include "RobotDriveControl.h"
 #include "RobotPerceptionPipeline.h"
 #include "RobotPoseTracking.h"
 
@@ -8,6 +9,7 @@ void setup()
   Serial.println("RobotProjectV2 snapshot sender starting");
 
   RobotPoseTracking::Setup();
+  RobotDriveControl::Setup();
   RobotPerceptionPipeline::Setup();
 }
 
@@ -16,6 +18,7 @@ void loop()
   const unsigned long now = millis();
 
   RobotPoseTracking::Update(now);
+  RobotDriveControl::Update(now);
   RobotPerceptionPipeline::Update(
     now,
     RobotPoseTracking::GetPose(),
