@@ -86,7 +86,7 @@ namespace SnapshotStreamConfig {
 }
 
 namespace OdometryConfig {
-  constexpr float WheelBaseCm = 10.0f; // distance between wheels / 2 
+  constexpr float WheelDistanceCm = 10.0f;
 
   // Startwert: 1 Hz Sensorsignal entspricht grob 1 cm/s Radgeschwindigkeit.
   // Diesen Faktor bitte spaeter mit realer Fahrstrecke kalibrieren.

@@ -16,7 +16,7 @@ namespace
   };
 
   WheelOdometry wheelOdometry(
-    OdometryConfig::WheelBaseCm,
+    OdometryConfig::WheelDistanceCm,
     OdometryConfig::LeftWheelSpeedCmPerSecPerHz,
     OdometryConfig::RightWheelSpeedCmPerSecPerHz,
     OdometryConfig::LeftDirectionSign,

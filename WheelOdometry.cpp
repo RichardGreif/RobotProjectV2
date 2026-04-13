@@ -8,7 +8,7 @@ WheelOdometry::WheelOdometry(
   float rightWheelSpeedCmPerSecPerHz,
   float leftDirectionSign,
   float rightDirectionSign)
-  : wheelBaseCm_(wheelBaseCm),
+  : wheelDistanceCm_(wheelBaseCm),
     leftWheelSpeedCmPerSecPerHz_(leftWheelSpeedCmPerSecPerHz),
     rightWheelSpeedCmPerSecPerHz_(rightWheelSpeedCmPerSecPerHz),
     leftDirectionSign_(leftDirectionSign),
@@ -44,8 +44,8 @@ void WheelOdometry::Update(unsigned long nowMs, float leftSpeedHz, float rightSp
   const float linearVelocityCmPerSec = 0.5f * (leftLinearSpeedCmPerSec_ + rightLinearSpeedCmPerSec_);
 
   float angularVelocityRadPerSec = 0.0f;
-  if (std::abs(wheelBaseCm_) > 1e-6f) {
-    angularVelocityRadPerSec = (rightLinearSpeedCmPerSec_ - leftLinearSpeedCmPerSec_) / wheelBaseCm_;
+  if (std::abs(wheelDistanceCm_) > 1e-6f) {
+    angularVelocityRadPerSec = (rightLinearSpeedCmPerSec_ - leftLinearSpeedCmPerSec_) / wheelDistanceCm_;
   }
 
   const float deltaYaw = angularVelocityRadPerSec * dtSec;

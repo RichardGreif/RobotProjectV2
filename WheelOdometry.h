@@ -6,7 +6,7 @@ class WheelOdometry
 {
 public:
   WheelOdometry(
-    float wheelBaseCm,
+    float wheelDistanceCm,
     float leftWheelSpeedCmPerSecPerHz,
     float rightWheelSpeedCmPerSecPerHz,
     float leftDirectionSign,
@@ -20,7 +20,7 @@ public:
   float GetRightLinearSpeedCmPerSec() const;
 
 private:
-  float wheelBaseCm_ = 0.0f;
+  float wheelDistanceCm_ = 0.0f;
   float leftWheelSpeedCmPerSecPerHz_ = 0.0f;
   float rightWheelSpeedCmPerSecPerHz_ = 0.0f;
   float leftDirectionSign_ = 1.0f;
