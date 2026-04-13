@@ -1,5 +1,7 @@
 #include "Measurement.h"
 
+#include "../Common/Geometry.h"
+
 namespace SLAM
 {
     constexpr float ANGLE_SPREAD = 0.261799f; // 15 degrees in radians, widening of the US sensor
@@ -10,6 +12,24 @@ namespace SLAM
     constexpr float normalizationFactor = 0.04f;
     constexpr float initialConfidence = 0.5f; // Initial confidence for new wall points in cm
     constexpr float minimumPointDistanceCm = 3.0f; // minimum distance to calculate a new wall point in cm
+
+    MeasurementPoint CreateMeasurement(
+        const Pose2D& robotPose,
+        float sensorXcm,
+        float sensorYcm,
+        float sensorYawRad,
+        float distanceCm)
+    {
+        const Vec2 sensorPositionLocal(sensorXcm, sensorYcm);
+        const Vec2 sensorDirectionLocal(
+            std::cos(sensorYawRad) * distanceCm,
+            std::sin(sensorYawRad) * distanceCm);
+
+        MeasurementPoint measurement;
+        measurement.position = Geometry::TransformToWorld(robotPose, sensorPositionLocal);
+        measurement.direction = Geometry::Rotate(sensorDirectionLocal, robotPose.yaw);
+        return measurement;
+    }
 
     WallPoint CreateInitialWallPoint(const MeasurementPoint& measurement)
     {
