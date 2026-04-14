@@ -17,7 +17,9 @@ SnapshotTcpClient::SnapshotTcpClient(
 
 void SnapshotTcpClient::begin() {
   WiFi.mode(WIFI_STA);
-  connectWifi(millis());
+  if (WiFi.status() != WL_CONNECTED) {
+    connectWifi(millis());
+  }
 }
 
 void SnapshotTcpClient::update(unsigned long nowMs) {

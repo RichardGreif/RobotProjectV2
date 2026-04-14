@@ -3,5 +3,5 @@
 namespace RobotDriveControl
 {
   void Setup();
-  void Update(unsigned long nowMs);
+  void Update(unsigned long nowMs, bool enabled);
 }

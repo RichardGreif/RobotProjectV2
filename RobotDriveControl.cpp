@@ -42,10 +42,16 @@ namespace RobotDriveControl
     strategy.Reset(input);
   }
 
-  void Update(unsigned long nowMs)
+  void Update(unsigned long nowMs, bool enabled)
   {
     if (driveController == nullptr)
     {
+      return;
+    }
+
+    if (!enabled)
+    {
+      driveController->stop();
       return;
     }
 
